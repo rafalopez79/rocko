@@ -1,0 +1,15 @@
+namespace com.bzsoft.rocko.model.fbdata;
+
+file_identifier "BDAT";
+
+table FBDataInfo {
+  reason:short;
+  includedLocations:[int];
+  excludedLocations:[int];
+}
+
+table FBData {
+  info:[FBDataInfo];
+}
+
+root_type FBData;

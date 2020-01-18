@@ -1,6 +1,8 @@
 package com.bzsoft.rocko.services;
 
+import com.bzsoft.rocko.model.DataResult;
+
 public interface DataService {
 
-	public void find();
+	public DataResult find(String sku, int location);
 }

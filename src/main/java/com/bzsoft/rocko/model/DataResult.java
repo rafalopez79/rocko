@@ -1,20 +1,14 @@
-package com.bzsoft.rocko.api;
+package com.bzsoft.rocko.model;
 
-import java.io.Serializable;
+import java.util.List;
 
-public class DataResultDTO implements Serializable {
+public class DataResult {
 
-	private static final long serialVersionUID = 1L;
+	private final String sku;
+	private final int location;
+	private final List<DataResultInfo> info;
 
-	private String sku;
-	private int location;
-	private DataResultInfoDTO info;
-
-	public DataResultDTO() {
-		super();
-	}
-
-	public DataResultDTO(final String sku, final int location, final DataResultInfoDTO info) {
+	public DataResult(final String sku, final int location, final List<DataResultInfo> info) {
 		this.sku = sku;
 		this.location = location;
 		this.info = info;
@@ -24,24 +18,12 @@ public class DataResultDTO implements Serializable {
 		return sku;
 	}
 
-	public void setSku(final String sku) {
-		this.sku = sku;
-	}
-
 	public int getLocation() {
 		return location;
 	}
 
-	public void setLocation(final int location) {
-		this.location = location;
-	}
-
-	public DataResultInfoDTO getInfo() {
+	public List<DataResultInfo> getInfo() {
 		return info;
-	}
-
-	public void setInfo(final DataResultInfoDTO info) {
-		this.info = info;
 	}
 
 	@Override
@@ -64,7 +46,7 @@ public class DataResultDTO implements Serializable {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		final DataResultDTO other = (DataResultDTO) obj;
+		final DataResult other = (DataResult) obj;
 		if (location != other.location) {
 			return false;
 		}
@@ -81,7 +63,7 @@ public class DataResultDTO implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("DataResultDTO [sku=").append(sku).append(", location=").append(location).append(", info=")
+		builder.append("DataResult [sku=").append(sku).append(", location=").append(location).append(", info=")
 				.append(info).append("]");
 		return builder.toString();
 	}
