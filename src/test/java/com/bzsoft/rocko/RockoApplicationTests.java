@@ -56,4 +56,28 @@ class RockoApplicationTests {
 			logger.info("response: " + response);
 		}
 	}
+
+	@Test
+	public void loadTest() throws UnsupportedEncodingException, Exception {
+		int keys = 0;
+		for (int location = 1; location < 10000; location++) {
+			for (int sku = 1000000; sku <= 2000000; sku++) {
+				keys++;
+				final List<DataResultInfoDTO> info = Arrays.asList(new DataResultInfoDTO(4, null, null),
+						new DataResultInfoDTO(5, null, null));
+				final DataResultDTO data = new DataResultDTO(String.valueOf(sku), location, info);
+				{
+					final String response = mvc
+							.perform(post("/api/data/{sku}/{loc}", sku, location)
+									.content(objectMapper.writeValueAsString(data))
+									.contentType(MediaType.APPLICATION_JSON_VALUE))
+							.andExpect(status().is(HttpStatus.OK.value())).andReturn().getResponse()
+							.getContentAsString();
+				}
+				if ((keys % 10000) == 0) {
+					logger.info("inserted {} keys", keys);
+				}
+			}
+		}
+	}
 }

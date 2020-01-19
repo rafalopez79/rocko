@@ -4,9 +4,13 @@ import java.util.List;
 
 public class DataResultInfo {
 
-	private final int reason;
-	private final List<Integer> includedLocations;
-	private final List<Integer> excludedLocations;
+	private int reason;
+	private List<Integer> includedLocations;
+	private List<Integer> excludedLocations;
+
+	public DataResultInfo() {
+		super();
+	}
 
 	public DataResultInfo(final int reason, final List<Integer> includedLocations,
 			final List<Integer> excludedLocations) {
@@ -26,6 +30,18 @@ public class DataResultInfo {
 
 	public List<Integer> getExcludedLocations() {
 		return excludedLocations;
+	}
+
+	public void setReason(final int reason) {
+		this.reason = reason;
+	}
+
+	public void setIncludedLocations(final List<Integer> includedLocations) {
+		this.includedLocations = includedLocations;
+	}
+
+	public void setExcludedLocations(final List<Integer> excludedLocations) {
+		this.excludedLocations = excludedLocations;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.bzsoft.rocko.services.impl;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,21 +12,25 @@ import org.springframework.stereotype.Service;
 
 import com.bzsoft.rocko.model.DataResult;
 import com.bzsoft.rocko.model.DataResultInfo;
-import com.bzsoft.rocko.model.fbdata.FBData;
-import com.bzsoft.rocko.model.fbdata.FBDataInfo;
 import com.bzsoft.rocko.services.DataService;
-import com.google.flatbuffers.FlatBufferBuilder;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class DataServiceImpl implements DataService {
 
 	private final TransactionDB db;
 	private final Logger logger;
+	private final ObjectMapper objectMapper;
 
 	@Autowired
-	public DataServiceImpl(final TransactionDB db, final Logger logger) {
+	public DataServiceImpl(final TransactionDB db, final Logger logger, final ObjectMapper objectMapper) {
 		this.db = db;
 		this.logger = logger;
+		this.objectMapper = objectMapper;
 	}
 
 	@Override
@@ -39,10 +42,10 @@ public class DataServiceImpl implements DataService {
 			if (value == null) {
 				list = Collections.emptyList();
 			} else {
-				list = readData(value);
+				list = readData(objectMapper, value);
 			}
 			return new DataResult(sku, location, list);
-		} catch (final RocksDBException e) {
+		} catch (final RocksDBException | IOException e) {
 			logger.error("Error accessing db", e);
 			throw new IllegalStateException(e);
 		}
@@ -52,9 +55,9 @@ public class DataServiceImpl implements DataService {
 	public void save(final String sku, final int location, final DataResult data) {
 		try {
 			final byte[] key = getKey(sku, location);
-			final byte[] value = writeData(data.getInfo());
+			final byte[] value = writeData(objectMapper, data.getInfo());
 			db.put(key, value);
-		} catch (final RocksDBException e) {
+		} catch (final RocksDBException | JsonProcessingException e) {
 			logger.error("Error accessing db", e);
 			throw new IllegalStateException(e);
 		}
@@ -68,80 +71,20 @@ public class DataServiceImpl implements DataService {
 		return sb.toString().getBytes();
 	}
 
-	private static final byte[] writeData(final List<DataResultInfo> list) {
+	private static final byte[] writeData(final ObjectMapper mapper, final List<DataResultInfo> list)
+			throws JsonProcessingException {
 		if ((list == null) || list.isEmpty()) {
 			return new byte[0];
 		}
-		final int len = list.size();
-		final FlatBufferBuilder builder = new FlatBufferBuilder(4096);
-		FBData.startFBData(builder);
-		FBData.startInfoVector(builder, len);
-		for (int i = 0; i < len; i++) {
-			final DataResultInfo di = list.get(i);
-			FBDataInfo.startFBDataInfo(builder);
-			FBDataInfo.addReason(builder, (short) di.getReason());
-			{
-				final List<Integer> il = di.getIncludedLocations();
-				if ((il != null) && !il.isEmpty()) {
-					FBDataInfo.createIncludedLocationsVector(builder,
-							il.stream().mapToInt(num -> num.intValue()).toArray());
-				}
-			}
-			{
-				final List<Integer> il = di.getExcludedLocations();
-				if ((il != null) && !il.isEmpty()) {
-					FBDataInfo.createExcludedLocationsVector(builder,
-							il.stream().mapToInt(num -> num.intValue()).toArray());
-				}
-			}
-
-			FBDataInfo.endFBDataInfo(builder);
-		}
-		FBData.endFBData(builder);
-		return builder.sizedByteArray();
+		return mapper.writeValueAsBytes(list);
 	}
 
-	private static final List<DataResultInfo> readData(final byte[] bytes) {
+	private static final List<DataResultInfo> readData(final ObjectMapper mapper, final byte[] bytes)
+			throws JsonParseException, JsonMappingException, IOException {
 		if ((bytes == null) || (bytes.length == 0)) {
 			return Collections.emptyList();
 		}
-		final ByteBuffer buf = ByteBuffer.wrap(bytes);
-		// Get an accessor to the root object inside the buffer.
-		final FBData fbData = FBData.getRootAsFBData(buf);
-		final int count = fbData.infoLength();
-		final List<DataResultInfo> outList = new ArrayList<>(count);
-		for (int i = 0; i < count; i++) {
-			final FBDataInfo fbDataInfo = fbData.info(i);
-			final int reason = fbDataInfo.reason();
-			final List<Integer> includedLocations;
-			{
-				int ilc = fbDataInfo.includedLocationsLength();
-				if (ilc > 0) {
-					includedLocations = new ArrayList<Integer>(ilc);
-					for (final int j = 0; j < ilc; ilc++) {
-						final int loc = fbDataInfo.includedLocations(j);
-						includedLocations.add(loc);
-					}
-				} else {
-					includedLocations = null;
-				}
-			}
-			final List<Integer> excludedLocations;
-			{
-				int ilc = fbDataInfo.excludedLocationsLength();
-				if (ilc > 0) {
-					excludedLocations = new ArrayList<Integer>(ilc);
-					for (final int j = 0; j < ilc; ilc++) {
-						final int loc = fbDataInfo.excludedLocations(j);
-						excludedLocations.add(loc);
-					}
-				} else {
-					excludedLocations = null;
-				}
-			}
-			final DataResultInfo dri = new DataResultInfo(reason, includedLocations, excludedLocations);
-			outList.add(dri);
-		}
-		return outList;
+		final JavaType type = mapper.getTypeFactory().constructCollectionType(List.class, DataResultInfo.class);
+		return mapper.readValue(bytes, type);
 	}
 }

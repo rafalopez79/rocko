@@ -20,7 +20,6 @@
 		<rocksdb.version>6.5.2</rocksdb.version>
 		<org.mapstruct.version>1.3.1.Final</org.mapstruct.version>
 		<vavr.version>0.10.2</vavr.version>
-		<flatbuffers.version>1.11.0</flatbuffers.version>
 		<spring.version>5.2.3.RELEASE</spring.version>
 		 <m2e.apt.activation>jdt_apt</m2e.apt.activation>
 	</properties>
@@ -75,12 +74,6 @@
 			<groupId>io.vavr</groupId>
 			<artifactId>vavr</artifactId>
 			<version>${vavr.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.flatbuffers</groupId>
-			<artifactId>flatbuffers-java</artifactId>
-			<version>${flatbuffers.version}</version>
 		</dependency>
 
 	</dependencies>
