@@ -1,6 +1,7 @@
 package com.bzsoft.rocko.api;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class DataResultDTO implements Serializable {
 
@@ -8,13 +9,13 @@ public class DataResultDTO implements Serializable {
 
 	private String sku;
 	private int location;
-	private DataResultInfoDTO info;
+	private List<DataResultInfoDTO> info;
 
 	public DataResultDTO() {
 		super();
 	}
 
-	public DataResultDTO(final String sku, final int location, final DataResultInfoDTO info) {
+	public DataResultDTO(final String sku, final int location, final List<DataResultInfoDTO> info) {
 		this.sku = sku;
 		this.location = location;
 		this.info = info;
@@ -36,11 +37,11 @@ public class DataResultDTO implements Serializable {
 		this.location = location;
 	}
 
-	public DataResultInfoDTO getInfo() {
+	public List<DataResultInfoDTO> getInfo() {
 		return info;
 	}
 
-	public void setInfo(final DataResultInfoDTO info) {
+	public void setInfo(final List<DataResultInfoDTO> info) {
 		this.info = info;
 	}
 
